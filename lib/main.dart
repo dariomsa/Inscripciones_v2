@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MainApp());
@@ -493,24 +496,147 @@ class _InscripcionFormState extends State<InscripcionForm> {
   }
 
   void _submitForm() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('¡Inscripción completada exitosamente!'),
-        backgroundColor: Colors.green,
-      ),
+    _enviarInscripcion();
+  }
+
+  Future<void> _enviarInscripcion() async {
+    // Mostrar diálogo de carga
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Enviando inscripción...'),
+            ],
+          ),
+        );
+      },
     );
 
-    // Aquí puedes enviar los datos a un backend
-    print('=== DATOS DEL PARTICIPANTE ===');
-    print('Nombres: ${nombresController.text}');
-    print('Apellidos: ${apellidosController.text}');
-    print('Documento: $tipoDocumento-${numeroDocumentoController.text}');
-    print('Email: ${emailController.text}');
-    print('Celular: ${celularController.text}');
-    print('\n=== DATOS DE FACTURACIÓN ===');
-    print('Nombre: ${nombreFacturacionController.text}');
-    print('Email: ${emailFacturacionController.text}');
-    print('Dirección: ${direccionFacturacionController.text}');
+    try {
+      // Generar UUID para idempotency_key
+      const uuid = Uuid();
+      String idempotencyKey = uuid.v4();
+
+      // Construir el JSON
+      final Map<String, dynamic> jsonData = {
+        "idempotency_key": idempotencyKey,
+        "checkout": null,
+        "tipo_inscripcion_id": 1,
+        "forma_pago_id": 5,
+        "participante": {
+          "nombres": nombresController.text,
+          "apellidos": apellidosController.text,
+          "tipo_documento": tipoDocumento,
+          "numero_documento": numeroDocumentoController.text,
+          "fecha_nacimiento": fechaNacimiento != null
+              ? '${fechaNacimiento!.year}-${fechaNacimiento!.month.toString().padLeft(2, '0')}-${fechaNacimiento!.day.toString().padLeft(2, '0')}'
+              : '',
+          "genero": genero,
+          "nacionalidad": nacionalidad,
+          "categoria": categoria,
+          "talla": talla,
+          "celular": celularController.text,
+          "email": emailController.text,
+          "ciudad": ciudadController.text,
+          "emergencia_nombre": emergenciaNombreController.text,
+          "emergencia_celular": emergenciaCelularController.text,
+        },
+        "facturacion": {
+          "fact_tipo_documento": factTipoDocumento,
+          "numero_doc_facturacion": numeroDocFacturacionController.text,
+          "nombre_facturacion": nombreFacturacionController.text,
+          "apellido_facturacion": apellidoFacturacionController.text,
+          "email_facturacion": emailFacturacionController.text,
+          "direccion_facturacion": direccionFacturacionController.text,
+          "telefono_facturacion": telefonoFacturacionController.text,
+        },
+        "pago": {
+          "referencia": "APP-TEST",
+        }
+      };
+
+      // Hacer la llamada HTTP
+      final response = await http.post(
+        Uri.parse('https://quito15k.com/api/inscripciones'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(jsonData),
+      );
+
+      // Cerrar diálogo de carga
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        if (responseData['success'] == true) {
+          final data = responseData['data'];
+          
+          if (!mounted) return;
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('¡Éxito!'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Inscripción completada correctamente'),
+                    const SizedBox(height: 12),
+                    Text('ID Inscripción: ${data['inscripcion_id']}'),
+                    Text('ID Participante: ${data['participante_id']}'),
+                    Text('ID Transacción: ${data['transaccion_id']}'),
+                    Text('Total: \$${data['total']}'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          _mostrarError(context, 'Error: ${responseData['message'] ?? 'Error desconocido'}');
+        }
+      } else {
+        _mostrarError(context, 'Error HTTP ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      _mostrarError(context, 'Error de conexión: $e');
+    }
+  }
+
+  void _mostrarError(BuildContext context, String mensaje) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(mensaje),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

@@ -25,7 +25,8 @@ class InscripcionForm extends StatefulWidget {
 
 class _InscripcionFormState extends State<InscripcionForm> {
   int currentStep = 0;
-  final formKey = GlobalKey<FormState>();
+  final formKeyParticipante = GlobalKey<FormState>();
+  final formKeyFacturacion = GlobalKey<FormState>();
 
   // Participante
   final nombresController = TextEditingController();
@@ -63,11 +64,11 @@ class _InscripcionFormState extends State<InscripcionForm> {
         currentStep: currentStep,
         onStepContinue: () {
           if (currentStep == 0) {
-            if (formKey.currentState!.validate()) {
+            if (formKeyParticipante.currentState!.validate()) {
               setState(() => currentStep = 1);
             }
           } else if (currentStep == 1) {
-            if (formKey.currentState!.validate()) {
+            if (formKeyFacturacion.currentState!.validate()) {
               _submitForm();
             }
           }
@@ -95,7 +96,7 @@ class _InscripcionFormState extends State<InscripcionForm> {
 
   Widget _buildParticipanteForm() {
     return Form(
-      key: formKey,
+      key: formKeyParticipante,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -352,7 +353,7 @@ class _InscripcionFormState extends State<InscripcionForm> {
 
   Widget _buildFacturacionForm() {
     return Form(
-      key: formKey,
+      key: formKeyFacturacion,
       child: SingleChildScrollView(
         child: Column(
           children: [

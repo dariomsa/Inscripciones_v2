@@ -99,103 +99,159 @@ class _InscripcionFormState extends State<InscripcionForm> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            TextFormField(
-              controller: nombresController,
-              decoration: const InputDecoration(
-                labelText: 'Nombres',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: apellidosController,
-              decoration: const InputDecoration(
-                labelText: 'Apellidos',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: tipoDocumento,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de Documento',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'C', child: Text('Cédula')),
-                DropdownMenuItem(value: 'P', child: Text('Pasaporte')),
-                DropdownMenuItem(value: 'R', child: Text('RUC')),
-              ],
-              onChanged: (value) => setState(() => tipoDocumento = value ?? 'C'),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: numeroDocumentoController,
-              decoration: const InputDecoration(
-                labelText: 'Número de Documento',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Fecha de Nacimiento',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  onPressed: _selectDate,
+            // Fila 1: Nombres y Apellidos
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: nombresController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombres',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
                 ),
-              ),
-              controller: TextEditingController(
-                text: fechaNacimiento != null
-                    ? '${fechaNacimiento!.day}/${fechaNacimiento!.month}/${fechaNacimiento!.year}'
-                    : '',
-              ),
-              validator: (value) {
-                if (fechaNacimiento == null) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: genero,
-              decoration: const InputDecoration(
-                labelText: 'Género',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'M', child: Text('Masculino')),
-                DropdownMenuItem(value: 'F', child: Text('Femenino')),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: apellidosController,
+                    decoration: const InputDecoration(
+                      labelText: 'Apellidos',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
               ],
-              onChanged: (value) => setState(() => genero = value ?? 'M'),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Nacionalidad',
-                border: OutlineInputBorder(),
-              ),
-              initialValue: nacionalidad,
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-              onChanged: (value) => nacionalidad = value,
+            // Fila 2: Tipo de Documento y Número
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: DropdownButtonFormField<String>(
+                    value: tipoDocumento,
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo de Documento',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'C', child: Text('Cédula')),
+                      DropdownMenuItem(value: 'P', child: Text('Pasaporte')),
+                      DropdownMenuItem(value: 'R', child: Text('RUC')),
+                    ],
+                    onChanged: (value) => setState(() => tipoDocumento = value ?? 'C'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: TextFormField(
+                    controller: numeroDocumentoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Número de Documento',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
+            // Fila 3: Fecha Nacimiento y Género
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Fecha de Nacimiento',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: _selectDate,
+                      ),
+                    ),
+                    controller: TextEditingController(
+                      text: fechaNacimiento != null
+                          ? '${fechaNacimiento!.day}/${fechaNacimiento!.month}/${fechaNacimiento!.year}'
+                          : '',
+                    ),
+                    validator: (value) {
+                      if (fechaNacimiento == null) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: genero,
+                    decoration: const InputDecoration(
+                      labelText: 'Género',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'M', child: Text('Masculino')),
+                      DropdownMenuItem(value: 'F', child: Text('Femenino')),
+                    ],
+                    onChanged: (value) => setState(() => genero = value ?? 'M'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Fila 4: Nacionalidad y Talla
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Nacionalidad',
+                      border: OutlineInputBorder(),
+                    ),
+                    initialValue: nacionalidad,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                    onChanged: (value) => nacionalidad = value,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: talla,
+                    decoration: const InputDecoration(
+                      labelText: 'Talla',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'XS', child: Text('XS')),
+                      DropdownMenuItem(value: 'S', child: Text('S')),
+                      DropdownMenuItem(value: 'M', child: Text('M')),
+                      DropdownMenuItem(value: 'L', child: Text('L')),
+                      DropdownMenuItem(value: 'XL', child: Text('XL')),
+                      DropdownMenuItem(value: 'XXL', child: Text('XXL')),
+                    ],
+                    onChanged: (value) => setState(() => talla = value ?? 'M'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Fila 5: Categoría (completa)
             TextFormField(
               decoration: const InputDecoration(
                 labelText: 'Categoría',
@@ -209,48 +265,41 @@ class _InscripcionFormState extends State<InscripcionForm> {
               onChanged: (value) => categoria = value,
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: talla,
-              decoration: const InputDecoration(
-                labelText: 'Talla',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'XS', child: Text('XS')),
-                DropdownMenuItem(value: 'S', child: Text('S')),
-                DropdownMenuItem(value: 'M', child: Text('M')),
-                DropdownMenuItem(value: 'L', child: Text('L')),
-                DropdownMenuItem(value: 'XL', child: Text('XL')),
-                DropdownMenuItem(value: 'XXL', child: Text('XXL')),
+            // Fila 6: Celular y Email
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: celularController,
+                    decoration: const InputDecoration(
+                      labelText: 'Celular',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      if (!value!.contains('@')) return 'Email inválido';
+                      return null;
+                    },
+                  ),
+                ),
               ],
-              onChanged: (value) => setState(() => talla = value ?? 'M'),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: celularController,
-              decoration: const InputDecoration(
-                labelText: 'Celular',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                if (!value!.contains('@')) return 'Email inválido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
+            // Fila 7: Ciudad
             TextFormField(
               controller: ciudadController,
               decoration: const InputDecoration(
@@ -263,28 +312,37 @@ class _InscripcionFormState extends State<InscripcionForm> {
               },
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: emergenciaNombreController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre Emergencia',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: emergenciaCelularController,
-              decoration: const InputDecoration(
-                labelText: 'Celular Emergencia',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
+            // Fila 8: Contacto de Emergencia
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: emergenciaNombreController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre Emergencia',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: emergenciaCelularController,
+                    decoration: const InputDecoration(
+                      labelText: 'Celular Emergencia',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -298,86 +356,116 @@ class _InscripcionFormState extends State<InscripcionForm> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            DropdownButtonFormField<String>(
-              value: factTipoDocumento,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de Documento',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'C', child: Text('Cédula')),
-                DropdownMenuItem(value: 'P', child: Text('Pasaporte')),
-                DropdownMenuItem(value: 'R', child: Text('RUC')),
+            // Fila 1: Tipo de Documento y Número
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: DropdownButtonFormField<String>(
+                    value: factTipoDocumento,
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo de Documento',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'C', child: Text('Cédula')),
+                      DropdownMenuItem(value: 'P', child: Text('Pasaporte')),
+                      DropdownMenuItem(value: 'R', child: Text('RUC')),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => factTipoDocumento = value ?? 'C'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: TextFormField(
+                    controller: numeroDocFacturacionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Número de Documento',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
               ],
-              onChanged: (value) =>
-                  setState(() => factTipoDocumento = value ?? 'C'),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: numeroDocFacturacionController,
-              decoration: const InputDecoration(
-                labelText: 'Número de Documento',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
+            // Fila 2: Nombre y Apellido
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: nombreFacturacionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: apellidoFacturacionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Apellido',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: nombreFacturacionController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
+            // Fila 3: Email y Teléfono
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: emailFacturacionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      if (!value!.contains('@')) return 'Email inválido';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: telefonoFacturacionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Teléfono',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Requerido';
+                      return null;
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: apellidoFacturacionController,
-              decoration: const InputDecoration(
-                labelText: 'Apellido',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: emailFacturacionController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                if (!value!.contains('@')) return 'Email inválido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
+            // Fila 4: Dirección (completa)
             TextFormField(
               controller: direccionFacturacionController,
               decoration: const InputDecoration(
                 labelText: 'Dirección',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: telefonoFacturacionController,
-              decoration: const InputDecoration(
-                labelText: 'Teléfono',
                 border: OutlineInputBorder(),
               ),
               validator: (value) {

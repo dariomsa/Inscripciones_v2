@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'dart:convert';
 
 void main() {
@@ -526,7 +527,7 @@ class _InscripcionFormState extends State<InscripcionForm> {
       // Construir el JSON
       final Map<String, dynamic> jsonData = {
         "idempotency_key": idempotencyKey,
-        "checkout": null,
+        "checkout": "p2p",
         "tipo_inscripcion_id": 1,
         "forma_pago_id": 5,
         "participante": {
@@ -580,34 +581,49 @@ class _InscripcionFormState extends State<InscripcionForm> {
         if (responseData['success'] == true) {
           final data = responseData['data'];
           
-          if (!mounted) return;
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('¡Éxito!'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Inscripción completada correctamente'),
-                    const SizedBox(height: 12),
-                    Text('ID Inscripción: ${data['inscripcion_id']}'),
-                    Text('ID Participante: ${data['participante_id']}'),
-                    Text('ID Transacción: ${data['transaccion_id']}'),
-                    Text('Total: \$${data['total']}'),
-                  ],
+          // Verificar si hay URL de checkout
+          if (data['checkout'] != null && data['checkout']['url'] != null) {
+            if (!mounted) return;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CheckoutScreen(
+                  checkoutUrl: data['checkout']['url'],
+                  inscripcionData: data,
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
+              ),
+            );
+          } else {
+            // Mostrar diálogo de éxito sin checkout
+            if (!mounted) return;
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('¡Éxito!'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Inscripción completada correctamente'),
+                      const SizedBox(height: 12),
+                      Text('ID Inscripción: ${data['inscripcion_id']}'),
+                      Text('ID Participante: ${data['participante_id']}'),
+                      Text('ID Transacción: ${data['transaccion_id']}'),
+                      Text('Total: \$${data['total']}'),
+                    ],
                   ),
-                ],
-              );
-            },
-          );
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
         } else {
           _mostrarError(context, 'Error: ${responseData['message'] ?? 'Error desconocido'}');
         }
@@ -656,5 +672,78 @@ class _InscripcionFormState extends State<InscripcionForm> {
     direccionFacturacionController.dispose();
     telefonoFacturacionController.dispose();
     super.dispose();
+  }
+}
+
+class CheckoutScreen extends StatefulWidget {
+  final String checkoutUrl;
+  final Map<String, dynamic> inscripcionData;
+
+  const CheckoutScreen({
+    super.key,
+    required this.checkoutUrl,
+    required this.inscripcionData,
+  });
+
+  @override
+  State<CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends State<CheckoutScreen> {
+  late WebViewController _webViewController;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeWebView();
+  }
+
+  void _initializeWebView() {
+    _webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            setState(() => _isLoading = true);
+          },
+          onPageFinished: (String url) {
+            setState(() => _isLoading = false);
+          },
+          onWebResourceError: (WebResourceError error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error de carga: ${error.description}'),
+              ),
+            );
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.checkoutUrl));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Realizar Pago'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _webViewController),
+          if (_isLoading)
+            Container(
+              color: Colors.black26,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

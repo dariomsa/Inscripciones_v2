@@ -28,9 +28,16 @@ class InscripcionForm extends StatefulWidget {
 }
 
 class _InscripcionFormState extends State<InscripcionForm> {
-  int currentStep = 0;
+  late PageController _pageController;
+  int currentPage = 0;
   final formKeyParticipante = GlobalKey<FormState>();
   final formKeyFacturacion = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
 
   // Participante
   final nombresController = TextEditingController();
@@ -64,37 +71,137 @@ class _InscripcionFormState extends State<InscripcionForm> {
         title: const Text('Inscripción de Participantes'),
         backgroundColor: Colors.blue,
       ),
-      body: Stepper(
-        currentStep: currentStep,
-        onStepContinue: () {
-          if (currentStep == 0) {
-            if (formKeyParticipante.currentState!.validate()) {
-              setState(() => currentStep = 1);
-            }
-          } else if (currentStep == 1) {
-            if (formKeyFacturacion.currentState!.validate()) {
-              _submitForm();
-            }
-          }
-        },
-        onStepCancel: () {
-          if (currentStep > 0) {
-            setState(() => currentStep = currentStep - 1);
-          }
-        },
-        steps: [
-          Step(
-            title: const Text('Datos del Participante'),
-            content: _buildParticipanteForm(),
-            isActive: currentStep >= 0,
+      body: Column(
+        children: [
+          // Indicador de progreso
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: currentPage == 0 ? Colors.blue : Colors.blue[200],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: currentPage == 1 ? Colors.blue : Colors.blue[200],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          Step(
-            title: const Text('Datos de Facturación'),
-            content: _buildFacturacionForm(),
-            isActive: currentStep >= 1,
+          // PageView con los formularios
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() => currentPage = index);
+              },
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _buildParticipanteScreen(),
+                _buildFacturacionScreen(),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildParticipanteScreen() {
+    return Column(
+      children: [
+        Expanded(
+          child: _buildParticipanteForm(),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                child: const Text('Cancelar', style: TextStyle(color: Colors.white)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (formKeyParticipante.currentState!.validate()) {
+                    _pageController.animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                child: const Text('Continuar', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFacturacionScreen() {
+    return Column(
+      children: [
+        Expanded(
+          child: _buildFacturacionForm(),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  _pageController.animateToPage(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                child: const Text('Atrás', style: TextStyle(color: Colors.white)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (formKeyFacturacion.currentState!.validate()) {
+                    _submitForm();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                child: const Text('Pagar', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -657,6 +764,7 @@ class _InscripcionFormState extends State<InscripcionForm> {
 
   @override
   void dispose() {
+    _pageController.dispose();
     nombresController.dispose();
     apellidosController.dispose();
     numeroDocumentoController.dispose();
